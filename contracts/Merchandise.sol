@@ -10,6 +10,18 @@ error Merchandise__NotInProgress();
 error Merchandise__NotEnoughETH();
 error Merchandise__NotBuyer();
 
+// 一度だけ購入可能な商品と繰り返し購入可能な商品
+// これ以上分岐するならクラスを分ける
+enum MerchandiseType {
+    ONLY_ONCE,
+    REPEATABLE
+}
+
+/**
+ * @title Merchandise
+ * @author Kenta Kawai
+ * @notice IoT機器データの管理を行うコントラクト
+ */
 contract Merchandise {
     // type declarations
     enum MerchandiseState {
@@ -17,12 +29,6 @@ contract Merchandise {
         IN_PROGRESS,
         SOLD,
         BANNED // 不正な商品
-    }
-
-    // 一度だけ購入可能な商品と繰り返し購入可能な商品
-    enum MerchandiseType {
-        ONLY_ONCE,
-        REPEATABLE
     }
 
     // state variables
