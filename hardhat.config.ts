@@ -7,7 +7,9 @@ import "./tasks/block-number";
 
 const EHTERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const SEPOLIA_USER_0 = process.env.SEPOLIA_USER_0;
+const SEPOLIA_USER_1 = process.env.SEPOLIA_USER_1;
+const SEPOLIA_USER_2 = process.env.SEPOLIA_USER_2;
 
 const getCurrentTime = () => {
   const date = new Date();
@@ -26,7 +28,9 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts: [
-        PRIVATE_KEY!,
+        SEPOLIA_USER_0!,
+        SEPOLIA_USER_1!,
+        SEPOLIA_USER_2!,
       ],
       chainId: 11155111,
     },
@@ -43,10 +47,21 @@ const config: HardhatUserConfig = {
     outputFile: `logs/${getCurrentTime()}`,
   },
   namedAccounts: {
-    deployer: {
+    marketOwner: {
       default: 0, // here this will by default take the first account as deployer
       1: 0, // similarly on mainnet it will take the first account as deployer. Note though that depending on how hardhat network are configured, the account 0 on one network can be different than on another
+      11155111: 0,
     },
+    iotOwner: {
+      default: 1, // here this will by default take the second account as deployer
+      1: 1, // similarly on mainnet it will take the second account as deployer. Note though that depending on how hardhat network are configured, the account 1 on one network can be different than on another
+      11155111: 1,
+    },
+    buyer: {
+      default: 2, // here this will by default take the third account as deployer
+      1: 2, // similarly on mainnet it will take the third account as deployer. Note though that depending on how hardhat network are configured, the account 2 on one network can be different than on another
+      11155111: 2,
+    }
   },
 };
 
