@@ -61,8 +61,11 @@ npx hardhat node
 ```
 
 - デプロイ  
-  --network オプションでデプロイ先のネットワークを指定できます。sepolia(テストネット), localhost(ローカルネットワーク), hardhat(コード実行時のみ動作する使い捨てネットワーク) が指定でき、デフォルトは hardhat です。また sepolia を指定した際には etherscan へのコード検証を行います。
+  --network オプションでデプロイ先のネットワークを指定できます。sepolia(テストネット), localhost(ローカルネットワーク), hardhat(コード実行時のみ動作する使い捨てネットワーク) が指定でき、デフォルトは hardhat です。また sepolia を指定した際には etherscan へのコード検証を行います。  
+  --tags オプションでデプロイするコントラクト群を指定できます。
+  all で全てのコントラクトをデプロイし、それ以外の場合はカンマ区切りで複数のコントラクトを指定できます。デフォルトは all です。
+  詳細は deploy フォルダ内のスクリプトを参照してください。
 
 ```bash
-npx hardhat run scripts/deploy.ts --network {network}
+npx hardhat deploy --tags {tags} --network {network}
 ```
