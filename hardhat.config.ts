@@ -5,11 +5,11 @@ import "hardhat-deploy";
 import "dotenv/config";
 import "./tasks/block-number";
 
-const EHTERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
-const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL;
-const SEPOLIA_USER_0 = process.env.SEPOLIA_USER_0;
-const SEPOLIA_USER_1 = process.env.SEPOLIA_USER_1;
-const SEPOLIA_USER_2 = process.env.SEPOLIA_USER_2;
+const EHTERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
+const SEPOLIA_USER_0 = process.env.SEPOLIA_USER_0 || "";
+const SEPOLIA_USER_1 = process.env.SEPOLIA_USER_1 || "";
+const SEPOLIA_USER_2 = process.env.SEPOLIA_USER_2 || "";
 
 const getCurrentTime = () => {
   const date = new Date();
@@ -28,9 +28,9 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: SEPOLIA_RPC_URL,
       accounts: [
-        SEPOLIA_USER_0!,
-        SEPOLIA_USER_1!,
-        SEPOLIA_USER_2!,
+        SEPOLIA_USER_0,
+        SEPOLIA_USER_1,
+        SEPOLIA_USER_2,
       ],
       chainId: 11155111,
     },
