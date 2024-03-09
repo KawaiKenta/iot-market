@@ -14,7 +14,7 @@ import { IoTMarket } from "../../typechain-types";
         let buyer: HardhatEthersSigner;
         beforeEach(async () => {
             [marketOwner, iotOwner, buyer] = await ethers.getSigners();
-            const deploy = await deployments.fixture(["all"]);
+            const deploy = await deployments.fixture(["IoTMarket"]);
             iotMarket = await ethers.getContractAt("IoTMarket", deploy["IoTMarket"].address, marketOwner);
         });
 

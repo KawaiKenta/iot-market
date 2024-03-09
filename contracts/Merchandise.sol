@@ -83,6 +83,14 @@ contract Merchandise {
         s_merchandiseState = MerchandiseState(state);
     }
 
+    function getOwner() public view returns (address) {
+        return i_owner;
+    }
+
+    function getDataHash() public view returns (bytes memory) {
+        return i_dataHash;
+    }
+
     function getPrice() public view returns (uint) {
         return s_price;
     }
