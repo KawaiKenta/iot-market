@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-      - name: Install dependencies
-        run: npm ci
       - name: Run unit test
-        run: npx hardhat test
+        uses: ambersun1234/hardhat-test-action@v1
+        with:
+          network: hardhat
