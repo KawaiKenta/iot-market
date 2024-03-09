@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: true,
     noColors: true,
-    outputFile: `logs/${getCurrentTime()}`,
+    // outputFile: `logs/${getCurrentTime()}`,
   },
   namedAccounts: {
     marketOwner: {

@@ -15,13 +15,10 @@ jobs:
       SEPOLIA_USER_2: ${{ secrets.SEPOLIA_USER_2 }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       - name: Set up Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
+        uses: actions/setup-node@v3
+      - name: Install Dependencies
+        run: npm ci
       - name: Run unit test
-        uses: ambersun1234/hardhat-test-action@v1
-        with:
-          network: hardhat
+        run: REPORT_GAS=false npx hardhat test
