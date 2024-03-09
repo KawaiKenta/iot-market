@@ -1,0 +1,19 @@
+name: test
+on:
+  push:
+    branches:
+      - main
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    name: Hardhat unit test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - mame: Set up Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Run unit test
+        run: npx hardhat test
