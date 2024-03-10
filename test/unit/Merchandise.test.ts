@@ -29,11 +29,21 @@ import { assert, expect } from "chai";
             it("Mechandise has right owner", async () => {
                 const response = await Merchandise.getOwner();
                 assert.equal(response, iotOwner.address);
-            })
+            });
 
             it("Mechandise has DataHash", async () => {
                 const response = await Merchandise.getDataHash();
                 assert.equal(response, ethers.encodeBytes32String("test"));
-            })
+            });
+
+            it("Merchandise has no confirmed buyers", async () => {
+                const response = await Merchandise.getConfirmedBuyers();
+                assert.isEmpty(response);
+            });
+
+            it("Merchandise has no progress buyers, and it retruns 0 when access", async () => {
+                const response = await Merchandise.getProgressBuyers(buyer);
+                assert.equal(response, 0n);
+            });
         })
     });

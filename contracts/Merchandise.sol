@@ -76,7 +76,7 @@ contract Merchandise {
     }
 
     /**
-     * @notice データの購入者がただ一度だけ呼べる関数。実データをもとに作成したHashを比較
+     * @notice データの購入者だけ呼べる関数。実データをもとに作成したHashを比較
      * でき、真正性を確認する。
      * @dev 受け取ったデータに対して検証せず、無理やりfalseにした場合はどうするか...?
      * @dev この関数をよぶ状態としては、IN_PROGRESS, BANNEDがありえる
@@ -131,6 +131,10 @@ contract Merchandise {
 
     function getPrice() public view returns (uint) {
         return s_price;
+    }
+
+    function getProgressBuyers(address buyer) public view returns (uint) {
+        return s_progressBuyers[buyer];
     }
 
     function getConfirmedBalance() public view returns (uint) {
