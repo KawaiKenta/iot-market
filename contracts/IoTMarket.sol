@@ -15,7 +15,6 @@ contract IoTMarket {
     constructor() {}
 
     // functions
-
     /**
      * @notice 商品のデプロイ
      * @dev 実際の商品のデプロイはMerchandiseコントラクトで行う
@@ -23,7 +22,7 @@ contract IoTMarket {
     function deployMerchandise(
         uint256 price,
         MerchandiseType merchandiseType,
-        bytes memory dataHash
+        bytes32 dataHash
     ) public {
         Merchandise merchandise = new Merchandise(
             price,

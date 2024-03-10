@@ -6,6 +6,7 @@ pragma solidity 0.8.19;
 // errors
 error Merchandise__NotOwner();
 error Merchandise__NotForSale();
+error Merchandise__AlreadyPurchased();
 error Merchandise__NotInProgress();
 error Merchandise__NotEnoughETH();
 error Merchandise__NotBuyer();
@@ -35,20 +36,18 @@ contract Merchandise {
     address private immutable i_owner;
     MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
     MerchandiseType public i_merchandiseType;
-    bytes private i_dataHash;
+    bytes32 private immutable i_dataHash;
+    uint public s_confirmedBalance;
     uint public s_price;
-    uint public s_InProgressBalance;
-    address[] public s_buyers;
+    mapping(address => uint) public s_progressBuyers;
+    address[] public s_confirmedBuyers;
 
     // events
     event Purchase(address indexed owner, address indexed buyer);
+    event Confirm(address indexed owner);
 
     // constructor
-    constructor(
-        uint price,
-        MerchandiseType merchandiseType,
-        bytes memory dataHash
-    ) {
+    constructor(uint price, MerchandiseType merchandiseType, bytes32 dataHash) {
         i_owner = msg.sender;
         s_price = price;
         i_merchandiseType = merchandiseType;
@@ -68,12 +67,47 @@ contract Merchandise {
         if (s_merchandiseState != MerchandiseState.SALE)
             revert Merchandise__NotForSale();
         if (msg.value < s_price) revert Merchandise__NotEnoughETH();
+        if (s_progressBuyers[msg.sender] > 0)
+            revert Merchandise__AlreadyPurchased();
 
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
         emit Purchase(i_owner, msg.sender);
-        s_InProgressBalance += msg.value;
-        // FIXME: 重複購入の防止と検証にO(n)のコストがかかる問題
-        s_buyers.push(msg.sender);
+        s_progressBuyers[msg.sender] = msg.value;
+    }
+
+    /**
+     * @notice データの購入者だけ呼べる関数。実データをもとに作成したHashを比較
+     * でき、真正性を確認する。
+     * @dev 受け取ったデータに対して検証せず、無理やりfalseにした場合はどうするか...?
+     * @dev この関数をよぶ状態としては、IN_PROGRESS, BANNEDがありえる
+     * @dev とりあえずシンプルにbanned or 失敗ならbannedにして返金して終了、それ以外なら商品の状態を変更し、確定金額に加算して終了
+     */
+    function confirm(bytes32 dataHash) public returns (bool) {
+        if (s_progressBuyers[msg.sender] == 0) revert Merchandise__NotBuyer();
+        uint balance = s_progressBuyers[msg.sender];
+        delete s_progressBuyers[msg.sender];
+
+        // 真正性が確認できない場合は、商品をBANNEDにして、購入者に返金する
+        if (
+            i_dataHash != dataHash ||
+            s_merchandiseState == MerchandiseState.BANNED
+        ) {
+            s_merchandiseState = MerchandiseState.BANNED;
+            payable(msg.sender).transfer(balance);
+            return false;
+        }
+
+        // typeの変更
+        if (i_merchandiseType == MerchandiseType.ONLY_ONCE) {
+            s_merchandiseState = MerchandiseState.SOLD;
+        } else {
+            s_merchandiseState = MerchandiseState.SALE;
+        }
+        // 確定金額に加算して、購入者リストに追加
+        s_confirmedBalance += balance;
+        s_confirmedBuyers.push(msg.sender);
+        emit Confirm(i_owner);
+        return true;
     }
 
     // OPEN <-> CLOSED は所有者が変更できる
@@ -83,16 +117,28 @@ contract Merchandise {
         s_merchandiseState = MerchandiseState(state);
     }
 
+    function getOwner() public view returns (address) {
+        return i_owner;
+    }
+
+    function getDataHash() public view returns (bytes32) {
+        return i_dataHash;
+    }
+
+    function getConfirmedBuyers() public view returns (address[] memory) {
+        return s_confirmedBuyers;
+    }
+
     function getPrice() public view returns (uint) {
         return s_price;
     }
 
-    function getInProgressBalance() public view returns (uint) {
-        return s_InProgressBalance;
+    function getProgressBuyers(address buyer) public view returns (uint) {
+        return s_progressBuyers[buyer];
     }
 
-    function getBuyers() public view returns (address[] memory) {
-        return s_buyers;
+    function getConfirmedBalance() public view returns (uint) {
+        return s_confirmedBalance;
     }
 
     function getMerchandiseState() public view returns (MerchandiseState) {
