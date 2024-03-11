@@ -37,12 +37,12 @@ import { assert, expect } from "chai";
             });
 
             it("Merchandise has no confirmed buyers", async () => {
-                const response = await Merchandise.getConfirmedBuyers();
-                assert.isEmpty(response);
+                const response = await Merchandise.isConfirmedBuyer(buyer);
+                assert.isFalse(response);
             });
 
-            it("Merchandise has no progress buyers, and it retruns 0 when access", async () => {
-                const response = await Merchandise.getProgressBuyers(buyer);
+            it("Merchandise has no progress buyers, and retrun 0.", async () => {
+                const response = await Merchandise.isProgressBuyer(buyer);
                 assert.equal(response, 0n);
             });
         })

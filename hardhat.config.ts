@@ -42,9 +42,9 @@ const config: HardhatUserConfig = {
     enabled: true
   },
   gasReporter: {
-    enabled: true,
+    enabled: (process.env.REPORT_GAS) ? true : false,
     noColors: true,
-    // outputFile: `logs/${getCurrentTime()}`,
+    outputFile: `logs/${getCurrentTime()}`,
   },
   namedAccounts: {
     marketOwner: {

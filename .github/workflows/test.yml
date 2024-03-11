@@ -6,7 +6,7 @@ on:
 jobs:
   unit-test:
     runs-on: ubuntu-latest
-    name: Hardhat unit test
+    name: Hardhat Unit Test
     env:
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
       SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
@@ -23,5 +23,5 @@ jobs:
           cache: "npm"
       - name: Install Dependencies
         run: npm ci
-      - name: Run unit test
-        run: REPORT_GAS=false npx hardhat test
+      - name: Run Unit Test
+        run: npx hardhat test

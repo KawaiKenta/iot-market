@@ -35,12 +35,12 @@ contract Merchandise {
     // state variables
     address private immutable i_owner;
     MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
-    MerchandiseType public i_merchandiseType;
+    MerchandiseType public immutable i_merchandiseType;
     bytes32 private immutable i_dataHash;
     uint public s_confirmedBalance;
     uint public s_price;
     mapping(address => uint) public s_progressBuyers;
-    address[] public s_confirmedBuyers;
+    mapping(address => bool) public s_confirmedBuyers;
 
     // events
     event Purchase(address indexed owner, address indexed buyer);
@@ -105,7 +105,7 @@ contract Merchandise {
         }
         // 確定金額に加算して、購入者リストに追加
         s_confirmedBalance += balance;
-        s_confirmedBuyers.push(msg.sender);
+        s_confirmedBuyers[msg.sender] = true;
         emit Confirm(i_owner);
         return true;
     }
@@ -125,15 +125,15 @@ contract Merchandise {
         return i_dataHash;
     }
 
-    function getConfirmedBuyers() public view returns (address[] memory) {
-        return s_confirmedBuyers;
+    function isConfirmedBuyer(address buyer) public view returns (bool) {
+        return s_confirmedBuyers[buyer];
     }
 
     function getPrice() public view returns (uint) {
         return s_price;
     }
 
-    function getProgressBuyers(address buyer) public view returns (uint) {
+    function isProgressBuyer(address buyer) public view returns (uint) {
         return s_progressBuyers[buyer];
     }
 
