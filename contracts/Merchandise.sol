@@ -27,10 +27,9 @@ contract Merchandise {
     // state variables
     uint public constant RETRY_LIMIT = 10;
     address private immutable i_owner;
-    MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
     bytes32 private immutable i_dataHash;
-    uint public s_confirmedBalance;
-    uint public s_price;
+    uint public i_price;
+    MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
     uint public s_trialCount = 0;
     address public s_progressBuyer;
     mapping(address => bool) public s_confirmedBuyers;
@@ -43,7 +42,7 @@ contract Merchandise {
     // constructor
     constructor(uint price, bytes32 dataHash) {
         i_owner = msg.sender;
-        s_price = price;
+        i_price = price;
         i_dataHash = dataHash;
     }
 
@@ -58,7 +57,7 @@ contract Merchandise {
     function purchase() public payable {
         if (s_merchandiseState != MerchandiseState.SALE)
             revert Merchandise__NotForSale();
-        if (msg.value < s_price) revert Merchandise__NotEnoughETH();
+        if (msg.value < i_price) revert Merchandise__NotEnoughETH();
         if (s_confirmedBuyers[msg.sender] == true)
             revert Merchandise__AlreadyPurchased();
 
@@ -99,6 +98,10 @@ contract Merchandise {
         return true;
     }
 
+    function getRetryLimit() public pure returns (uint) {
+        return RETRY_LIMIT;
+    }
+
     function getOwner() public view returns (address) {
         return i_owner;
     }
@@ -107,23 +110,23 @@ contract Merchandise {
         return i_dataHash;
     }
 
-    function isConfirmedBuyer(address buyer) public view returns (bool) {
-        return s_confirmedBuyers[buyer];
+    function getPrice() public view returns (uint) {
+        return i_price;
     }
 
-    function getPrice() public view returns (uint) {
-        return s_price;
+    function getState() public view returns (MerchandiseState) {
+        return s_merchandiseState;
+    }
+
+    function getTrialCount() public view returns (uint) {
+        return s_trialCount;
     }
 
     function getProgressBuyer() public view returns (address) {
         return s_progressBuyer;
     }
 
-    function getConfirmedBalance() public view returns (uint) {
-        return s_confirmedBalance;
-    }
-
-    function getMerchandiseState() public view returns (MerchandiseState) {
-        return s_merchandiseState;
+    function isConfirmedBuyer(address buyer) public view returns (bool) {
+        return s_confirmedBuyers[buyer];
     }
 }
