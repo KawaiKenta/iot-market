@@ -19,16 +19,8 @@ contract IoTMarket {
      * @notice 商品のデプロイ
      * @dev 実際の商品のデプロイはMerchandiseコントラクトで行う
      */
-    function deployMerchandise(
-        uint256 price,
-        MerchandiseType merchandiseType,
-        bytes32 dataHash
-    ) public {
-        Merchandise merchandise = new Merchandise(
-            price,
-            merchandiseType,
-            dataHash
-        );
+    function deployMerchandise(uint256 price, bytes32 dataHash) public {
+        Merchandise merchandise = new Merchandise(price, dataHash);
         s_merchandises.push(merchandise);
     }
 

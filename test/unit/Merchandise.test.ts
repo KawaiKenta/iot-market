@@ -18,7 +18,6 @@ import { assert, expect } from "chai";
                 from: iotOwner.address,
                 args: [
                     ethers.parseEther("0.01"),
-                    0,
                     ethers.encodeBytes32String("test"),
                 ]
             });
@@ -42,8 +41,8 @@ import { assert, expect } from "chai";
             });
 
             it("Merchandise has no progress buyers, and retrun 0.", async () => {
-                const response = await Merchandise.isProgressBuyer(buyer);
-                assert.equal(response, 0n);
+                const response = await Merchandise.getProgressBuyer();
+                assert.equal(response, ethers.ZeroAddress);
             });
         })
     });
