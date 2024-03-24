@@ -1,6 +1,6 @@
 import { deployments, ethers, network } from "hardhat";
 import { developmentChains } from "../../helper-hardhat-config";
-import { Merchandise, Merchandise__factory } from "../../typechain-types";
+import { Merchandise } from "../../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { assert, expect } from "chai";
 

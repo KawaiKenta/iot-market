@@ -6,10 +6,12 @@ pragma solidity 0.8.19;
 // errors
 error Merchandise__NotOwner();
 error Merchandise__NotForSale();
+error Merchandise__Bunned();
 error Merchandise__AlreadyPurchased();
 error Merchandise__NotInProgress();
 error Merchandise__NotEnoughETH();
 error Merchandise__NotBuyer();
+error Merchandise__WithdrawFailed();
 
 /**
  * @title Merchandise
@@ -67,7 +69,7 @@ contract Merchandise {
     }
 
     /**
-     * @notice データの購入者だけ呼べる関数。実データをもとに作成したHashを比較でき、完全性を確認する。
+     * @notice データ購入者が実データの完全性を検証するための関数。実データをもとに作成したHashを比較し、完全性を確認する。
      * @dev できるだけシンプルにするため、今回は同時購入を考慮しない。
      * @dev 購入者、提供者の双方に悪意はなく途中経路での改竄があり得ると仮定する。
      * @dev RETRY_LIMIT回まで再送を要求する。それ以上の場合は商品をBANNEDにする。
@@ -96,6 +98,19 @@ contract Merchandise {
         s_confirmedBuyers[msg.sender] = true;
         emit Verify(i_owner, msg.sender, true);
         return true;
+    }
+
+    /**
+     * @notice 販売者が処理確定された通貨を引き出すための関数
+     * @dev この関数は、販売者だけがBANされていないものに対してのみ呼び出すことができる
+     */
+    function withdraw() public {
+        if (msg.sender != i_owner) revert Merchandise__NotOwner();
+        if (s_merchandiseState == MerchandiseState.BANNED)
+            revert Merchandise__Bunned();
+
+        (bool success, ) = i_owner.call{value: address(this).balance}("");
+        if (!success) revert Merchandise__WithdrawFailed();
     }
 
     function getRetryLimit() public pure returns (uint) {
