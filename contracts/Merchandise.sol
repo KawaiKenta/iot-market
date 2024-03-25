@@ -6,17 +6,12 @@ pragma solidity 0.8.19;
 // errors
 error Merchandise__NotOwner();
 error Merchandise__NotForSale();
+error Merchandise__Bunned();
 error Merchandise__AlreadyPurchased();
 error Merchandise__NotInProgress();
 error Merchandise__NotEnoughETH();
 error Merchandise__NotBuyer();
-
-// 一度だけ購入可能な商品と繰り返し購入可能な商品
-// これ以上分岐するならクラスを分ける
-enum MerchandiseType {
-    ONLY_ONCE,
-    REPEATABLE
-}
+error Merchandise__WithdrawFailed();
 
 /**
  * @title Merchandise
@@ -28,29 +23,28 @@ contract Merchandise {
     enum MerchandiseState {
         SALE,
         IN_PROGRESS,
-        SOLD,
         BANNED // 不正な商品
     }
 
     // state variables
+    uint public constant RETRY_LIMIT = 10;
     address private immutable i_owner;
-    MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
-    MerchandiseType public immutable i_merchandiseType;
     bytes32 private immutable i_dataHash;
-    uint public s_confirmedBalance;
-    uint public s_price;
-    mapping(address => uint) public s_progressBuyers;
+    uint public i_price;
+    MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
+    uint public s_trialCount = 0;
+    address public s_progressBuyer;
     mapping(address => bool) public s_confirmedBuyers;
 
     // events
     event Purchase(address indexed owner, address indexed buyer);
     event Confirm(address indexed owner);
+    event Verify(address indexed owner, address indexed buyer, bool result);
 
     // constructor
-    constructor(uint price, MerchandiseType merchandiseType, bytes32 dataHash) {
+    constructor(uint price, bytes32 dataHash) {
         i_owner = msg.sender;
-        s_price = price;
-        i_merchandiseType = merchandiseType;
+        i_price = price;
         i_dataHash = dataHash;
     }
 
@@ -60,61 +54,66 @@ contract Merchandise {
      * @dev 商品の状態がSALEでない場合は失敗する
      * @dev 商品を購入するための十分なethがない場合は失敗する
      * @dev 商品の状態をIN_PROGRESSに変更し、イベントの発火
-     * @dev 検証のために、購入者と一時預り金を記録する
+     * @dev この時点で購入者は通貨を払う
      */
     function purchase() public payable {
-        // revert処理
         if (s_merchandiseState != MerchandiseState.SALE)
             revert Merchandise__NotForSale();
-        if (msg.value < s_price) revert Merchandise__NotEnoughETH();
-        if (s_progressBuyers[msg.sender] > 0)
+        if (msg.value < i_price) revert Merchandise__NotEnoughETH();
+        if (s_confirmedBuyers[msg.sender] == true)
             revert Merchandise__AlreadyPurchased();
 
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
+        s_progressBuyer = msg.sender;
         emit Purchase(i_owner, msg.sender);
-        s_progressBuyers[msg.sender] = msg.value;
     }
 
     /**
-     * @notice データの購入者だけ呼べる関数。実データをもとに作成したHashを比較
-     * でき、真正性を確認する。
-     * @dev 受け取ったデータに対して検証せず、無理やりfalseにした場合はどうするか...?
-     * @dev この関数をよぶ状態としては、IN_PROGRESS, BANNEDがありえる
-     * @dev とりあえずシンプルにbanned or 失敗ならbannedにして返金して終了、それ以外なら商品の状態を変更し、確定金額に加算して終了
+     * @notice データ購入者が実データの完全性を検証するための関数。実データをもとに作成したHashを比較し、完全性を確認する。
+     * @dev できるだけシンプルにするため、今回は同時購入を考慮しない。
+     * @dev 購入者、提供者の双方に悪意はなく途中経路での改竄があり得ると仮定する。
+     * @dev RETRY_LIMIT回まで再送を要求する。それ以上の場合は商品をBANNEDにする。
      */
-    function confirm(bytes32 dataHash) public returns (bool) {
-        if (s_progressBuyers[msg.sender] == 0) revert Merchandise__NotBuyer();
-        uint balance = s_progressBuyers[msg.sender];
-        delete s_progressBuyers[msg.sender];
+    function verify(bytes32 dataHash) public {
+        // 購入者でない or 購入手続き中でないなら失敗
+        if (s_merchandiseState != MerchandiseState.IN_PROGRESS)
+            revert Merchandise__NotInProgress();
+        if (s_progressBuyer != msg.sender) revert Merchandise__NotBuyer();
 
-        // 真正性が確認できない場合は、商品をBANNEDにして、購入者に返金する
-        if (
-            i_dataHash != dataHash ||
-            s_merchandiseState == MerchandiseState.BANNED
-        ) {
+        // 完全性が確認できない場合は、商品をBANNEDにして、購入者に返金する
+        if (i_dataHash != dataHash && s_trialCount < RETRY_LIMIT) {
+            s_trialCount++;
+            // データの再送を要求
+            emit Verify(i_owner, msg.sender, false);
+            return;
+        } else if (i_dataHash != dataHash && s_trialCount >= RETRY_LIMIT) {
             s_merchandiseState = MerchandiseState.BANNED;
-            payable(msg.sender).transfer(balance);
-            return false;
+            return;
         }
 
-        // typeの変更
-        if (i_merchandiseType == MerchandiseType.ONLY_ONCE) {
-            s_merchandiseState = MerchandiseState.SOLD;
-        } else {
-            s_merchandiseState = MerchandiseState.SALE;
-        }
-        // 確定金額に加算して、購入者リストに追加
-        s_confirmedBalance += balance;
+        // 完全性が確認できた場合にSALEに戻し、販売者に提供が完了したことを通知
+        s_merchandiseState = MerchandiseState.SALE;
+        s_trialCount = 0;
+        s_progressBuyer = address(0);
         s_confirmedBuyers[msg.sender] = true;
-        emit Confirm(i_owner);
-        return true;
+        emit Verify(i_owner, msg.sender, true);
     }
 
-    // OPEN <-> CLOSED は所有者が変更できる
-    // BANNED, SHIPPED はシステムによってのみ変更される
-    function setMerchaniseState(uint8 state) public {
+    /**
+     * @notice 販売者が処理確定された通貨を引き出すための関数
+     * @dev この関数は、販売者だけがBANされていないものに対してのみ呼び出すことができる
+     */
+    function withdraw() public {
         if (msg.sender != i_owner) revert Merchandise__NotOwner();
-        s_merchandiseState = MerchandiseState(state);
+        if (s_merchandiseState == MerchandiseState.BANNED)
+            revert Merchandise__Bunned();
+
+        (bool success, ) = i_owner.call{value: address(this).balance}("");
+        if (!success) revert Merchandise__WithdrawFailed();
+    }
+
+    function getRetryLimit() public pure returns (uint) {
+        return RETRY_LIMIT;
     }
 
     function getOwner() public view returns (address) {
@@ -125,27 +124,23 @@ contract Merchandise {
         return i_dataHash;
     }
 
-    function isConfirmedBuyer(address buyer) public view returns (bool) {
-        return s_confirmedBuyers[buyer];
-    }
-
     function getPrice() public view returns (uint) {
-        return s_price;
+        return i_price;
     }
 
-    function isProgressBuyer(address buyer) public view returns (uint) {
-        return s_progressBuyers[buyer];
-    }
-
-    function getConfirmedBalance() public view returns (uint) {
-        return s_confirmedBalance;
-    }
-
-    function getMerchandiseState() public view returns (MerchandiseState) {
+    function getState() public view returns (MerchandiseState) {
         return s_merchandiseState;
     }
 
-    function getMerchandiseType() public view returns (MerchandiseType) {
-        return i_merchandiseType;
+    function getTrialCount() public view returns (uint) {
+        return s_trialCount;
+    }
+
+    function getProgressBuyer() public view returns (address) {
+        return s_progressBuyer;
+    }
+
+    function isConfirmedBuyer(address buyer) public view returns (bool) {
+        return s_confirmedBuyers[buyer];
     }
 }
