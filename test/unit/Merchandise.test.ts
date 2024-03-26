@@ -1,4 +1,4 @@
-import { deployments, ethers, network } from "hardhat";
+import { ethers, network } from "hardhat";
 import { developmentChains } from "../../helper-hardhat-config";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { assert, expect } from "chai";
@@ -11,14 +11,13 @@ const MerchandiseState = {
 
 const deployFixture = async () => {
   const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
-  const deploy = await deployments.deploy("Merchandise", {
-    from: iotOwner.address,
-    args: [ethers.parseEther("0.01"), ethers.encodeBytes32String("test")],
-  });
-  const Merchandise = await ethers.getContractAt(
+  const MerchandiseFactory = await ethers.getContractFactory(
     "Merchandise",
-    deploy.address,
     iotOwner
+  );
+  const Merchandise = await MerchandiseFactory.deploy(
+    ethers.parseEther("0.01"),
+    ethers.encodeBytes32String("test")
   );
   return { marketOwner, iotOwner, buyer, Merchandise };
 };
