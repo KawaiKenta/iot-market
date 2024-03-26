@@ -72,7 +72,7 @@ contract Merchandise {
      * @notice データ購入者が実データの完全性を検証するための関数。実データをもとに作成したHashを比較し、完全性を確認する。
      * @dev できるだけシンプルにするため、今回は同時購入を考慮しない。
      * @dev 購入者、提供者の双方に悪意はなく途中経路での改竄があり得ると仮定する。
-     * @dev RETRY_LIMIT回まで再送を要求する。それ以上の場合は商品をBANNEDにする。
+     * @dev RETRY_LIMIT回まで要求する。それ以上の場合は商品をBANNEDにする。
      */
     function verify(bytes32 dataHash) public {
         // 購入者でない or 購入手続き中でないなら失敗
@@ -80,9 +80,9 @@ contract Merchandise {
             revert Merchandise__NotInProgress();
         if (s_progressBuyer != msg.sender) revert Merchandise__NotBuyer();
 
+        s_trialCount++;
         // 完全性が確認できない場合は、商品をBANNEDにして、購入者に返金する
         if (i_dataHash != dataHash && s_trialCount < RETRY_LIMIT) {
-            s_trialCount++;
             // データの再送を要求
             emit Verify(i_owner, msg.sender, false);
             return;
