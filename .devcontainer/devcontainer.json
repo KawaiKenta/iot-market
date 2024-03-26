@@ -9,7 +9,17 @@
       "extensions": [
         "NomicFoundation.hardhat-solidity",
         "esbenp.prettier-vscode"
-      ]
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[solidity]": {
+          "editor.defaultFormatter": "NomicFoundation.hardhat-solidity"
+        }
+      }
     }
   },
   "postCreateCommand": "npm install"
