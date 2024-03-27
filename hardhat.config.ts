@@ -3,7 +3,6 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
 import "dotenv/config";
-import "./tasks/block-number";
 
 const EHTERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
@@ -13,8 +12,8 @@ const SEPOLIA_USER_2 = process.env.SEPOLIA_USER_2 || "";
 
 const getCurrentTime = () => {
   const date = new Date();
-  return date.toLocaleString('sv-SE');
-}
+  return date.toLocaleString("sv-SE");
+};
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -27,11 +26,7 @@ const config: HardhatUserConfig = {
     },
     sepolia: {
       url: SEPOLIA_RPC_URL,
-      accounts: [
-        SEPOLIA_USER_0,
-        SEPOLIA_USER_1,
-        SEPOLIA_USER_2,
-      ],
+      accounts: [SEPOLIA_USER_0, SEPOLIA_USER_1, SEPOLIA_USER_2],
       chainId: 11155111,
     },
   },
@@ -39,10 +34,10 @@ const config: HardhatUserConfig = {
     apiKey: EHTERSCAN_API_KEY,
   },
   sourcify: {
-    enabled: true
+    enabled: true,
   },
   gasReporter: {
-    enabled: (process.env.REPORT_GAS) ? true : false,
+    enabled: process.env.REPORT_GAS ? true : false,
     noColors: true,
     outputFile: `logs/${getCurrentTime()}`,
   },
@@ -61,7 +56,7 @@ const config: HardhatUserConfig = {
       default: 2, // here this will by default take the third account as deployer
       1: 2, // similarly on mainnet it will take the third account as deployer. Note though that depending on how hardhat network are configured, the account 2 on one network can be different than on another
       11155111: 2,
-    }
+    },
   },
 };
 
