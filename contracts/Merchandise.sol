@@ -43,7 +43,7 @@ contract Merchandise {
 
     // constructor
     constructor(uint price, bytes32 dataHash) {
-        i_owner = msg.sender;
+        i_owner = tx.origin;
         i_price = price;
         i_dataHash = dataHash;
     }
