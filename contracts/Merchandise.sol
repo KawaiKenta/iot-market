@@ -38,7 +38,6 @@ contract Merchandise {
 
     // events
     event Purchase(address indexed owner, address indexed buyer);
-    event Confirm(address indexed owner);
     event Verify(address indexed owner, address indexed buyer, bool result);
 
     // constructor

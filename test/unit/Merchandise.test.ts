@@ -133,10 +133,16 @@ const verifyfailFixture = async () => {
         });
 
         it("Buyer can purchase merchandise", async () => {
-          const { buyer, Merchandise } = await loadFixture(deployFixture);
-          await Merchandise.connect(buyer).purchase({
-            value: ethers.parseEther("0.01"),
-          });
+          const { iotOwner, buyer, Merchandise } = await loadFixture(
+            deployFixture
+          );
+          await expect(
+            Merchandise.connect(buyer).purchase({
+              value: ethers.parseEther("0.01"),
+            })
+          )
+            .to.emit(Merchandise, "Purchase")
+            .withArgs(iotOwner, buyer);
           const buyerAddress = await Merchandise.getProgressBuyer();
           const state = await Merchandise.getState();
           assert.equal(buyerAddress, buyer.address);
@@ -173,7 +179,7 @@ const verifyfailFixture = async () => {
           const wrongHash = ethers.encodeBytes32String("wrong data");
           await expect(Merchandise.connect(buyer).verify(wrongHash))
             .to.emit(Merchandise, "Verify")
-            .withArgs(iotOwner.address, buyer.address, false);
+            .withArgs(iotOwner, buyer, false);
         });
 
         it("Buyer can confirm data", async () => {
@@ -183,7 +189,7 @@ const verifyfailFixture = async () => {
           const wrongHash = ethers.encodeBytes32String("test");
           await expect(Merchandise.connect(buyer).verify(wrongHash))
             .to.emit(Merchandise, "Verify")
-            .withArgs(iotOwner.address, buyer.address, true);
+            .withArgs(iotOwner, buyer, true);
         });
       });
 
