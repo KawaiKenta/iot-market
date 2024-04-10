@@ -1,31 +1,20 @@
-# Hardhat スターターキット
+# IoT データマーケットプレイス
 
-ブロックチェーンの開発フレームワークである Hardhat の基本的な使用例を示しています。サンプルのコントラクト、そのコントラクトのテスト、そのコントラクトをデプロイするスクリプトが含まれています。TypeScript に対応済み。
+ブロックチェーンを用いた IoT データの流通フレームワークです。
 
 # Usage
-
-## Requirements
-
-- Node.js
-- npm
-
-もしくは、docker を使って実行することもできます。
-場合はすべての`npm`, `npx`コマンドの前に`docker compose run`を追加して実行してください。
 
 ## Setup
 
 - プロジェクトをクローンする
 
 ```bash
-git clone https://github.com/ertlnagoya/hardhat-starter-kit.git
-cd hardhat-starter-kit
+git clone https://github.com/ertlnagoya/iot-market.git
+cd iot-market
 ```
 
-- パッケージのインストール
-
-```bash
-npm install
-```
+- devcontainer の起動  
+  VSCode の拡張機能で Remote - Containers をインストールしてください。その後コマンドパレットを開き、devcontainer: Open Folder in Container を選択してください。
 
 - .env ファイルを作成する
   .env.example をコピー・編集して.env ファイルを作成してください。
@@ -68,4 +57,28 @@ npx hardhat node
 
 ```bash
 npx hardhat deploy --tags {tags} --network {network}
+```
+
+### シーケンス図
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Mediator(IoTOwner)
+    actor iotOwner as IoTオーナー
+    participant Merchandise as IoTメタデータ
+    participant IoTMarketplace as マーケットプレイス
+    participant Frontend as UIアプリケーション
+    actor buyer as データ購入者
+    participant Mediator(Buyer)
+    Mediator(IoTOwner)->>IoTMarketplace: Deploy
+    Note right of Mediator(IoTOwner): Hash値などメタデータ
+    IoTMarketplace->>Merchandise: コンストラクタ
+    buyer->>Frontend: データ購入リクエスト
+    Note left of buyer: ウォレットによる署名
+    Frontend->>Merchandise: purchase
+    Mediator(buyer)->>Mediator(IoTOwner): 実データの要求
+    Mediator(buyer)->>Mediator(buyer):Hash()
+    Mediator(buyer)->>Merchandise: verify()
+    Mediator(IoTOwner)->>Merchandise: withdraw()
 ```
