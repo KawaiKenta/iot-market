@@ -61,16 +61,18 @@ npx hardhat deploy --tags {tags} --network {network}
 
 ### シーケンス図
 
+データ流通における購入~検証までのシーケンス図です。
+
 ```mermaid
 sequenceDiagram
     autonumber
     participant Mediator(IoTOwner)
     actor iotOwner as IoTオーナー
-    participant Merchandise as IoTメタデータ
+    participant Merchandise
     participant IoTMarketplace as マーケットプレイス
     participant Frontend as UIアプリケーション
     actor buyer as データ購入者
-    participant Mediator(Buyer)
+    participant Mediator(buyer)
     Mediator(IoTOwner)->>IoTMarketplace: Deploy
     Note right of Mediator(IoTOwner): Hash値などメタデータ
     IoTMarketplace->>Merchandise: コンストラクタ
