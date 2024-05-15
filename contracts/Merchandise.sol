@@ -38,12 +38,11 @@ contract Merchandise {
 
     // events
     event Purchase(address indexed owner, address indexed buyer);
-    event Confirm(address indexed owner);
     event Verify(address indexed owner, address indexed buyer, bool result);
 
     // constructor
     constructor(uint price, bytes32 dataHash) {
-        i_owner = msg.sender;
+        i_owner = tx.origin;
         i_price = price;
         i_dataHash = dataHash;
     }
