@@ -2,6 +2,11 @@
 
 ブロックチェーンを用いた IoT データの流通フレームワークです。
 
+## 推奨環境
+
+Docker Engine でも動作するように設定していますが、host.docker.internal が使える Docker Desctop 環境での開発を推奨します。
+Docker Desktop がインストールされている場合`devcontainer.json`の`runArgs`をコメントアウトしてください。
+
 # Usage
 
 ## Setup
