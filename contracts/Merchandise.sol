@@ -18,6 +18,8 @@ error Merchandise__WithdrawFailed();
  * @author Kenta Kawai
  * @notice IoT機器データの管理を行うコントラクト
  */
+import "hardhat/console.sol";
+
 contract Merchandise {
     // type declarations
     enum MerchandiseState {
@@ -37,7 +39,11 @@ contract Merchandise {
     mapping(address => bool) public s_confirmedBuyers;
 
     // events
-    event Purchase(address indexed owner, address indexed buyer);
+    event Purchase(
+        address indexed owner,
+        address indexed buyer,
+        address indexed merchandise
+    );
     event Verify(address indexed owner, address indexed buyer, bool result);
 
     // constructor
@@ -45,6 +51,11 @@ contract Merchandise {
         i_owner = tx.origin;
         i_price = price;
         i_dataHash = dataHash;
+        console.log(
+            "constructor is called: address:%s, call:%s",
+            address(this),
+            msg.sender
+        );
     }
 
     // functions
@@ -64,7 +75,12 @@ contract Merchandise {
 
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
         s_progressBuyer = msg.sender;
-        emit Purchase(i_owner, msg.sender);
+        emit Purchase(i_owner, msg.sender, address(this));
+        console.log(
+            "purchase is called: address:%s, call:%s",
+            address(this),
+            msg.sender
+        );
     }
 
     /**
@@ -72,8 +88,9 @@ contract Merchandise {
      * @dev できるだけシンプルにするため、今回は同時購入を考慮しない。
      * @dev 購入者、提供者の双方に悪意はなく途中経路での改竄があり得ると仮定する。
      * @dev RETRY_LIMIT回まで要求する。それ以上の場合は商品をBANNEDにする。
+     * @return 完全性が確認できた場合はtrue、できなかった場合はfalse
      */
-    function verify(bytes32 dataHash) public {
+    function verify(bytes32 dataHash) public returns (bool) {
         // 購入者でない or 購入手続き中でないなら失敗
         if (s_merchandiseState != MerchandiseState.IN_PROGRESS)
             revert Merchandise__NotInProgress();
@@ -84,10 +101,10 @@ contract Merchandise {
         if (i_dataHash != dataHash && s_trialCount < RETRY_LIMIT) {
             // データの再送を要求
             emit Verify(i_owner, msg.sender, false);
-            return;
+            return false;
         } else if (i_dataHash != dataHash && s_trialCount >= RETRY_LIMIT) {
             s_merchandiseState = MerchandiseState.BANNED;
-            return;
+            return false;
         }
 
         // 完全性が確認できた場合にSALEに戻し、販売者に提供が完了したことを通知
@@ -95,7 +112,13 @@ contract Merchandise {
         s_trialCount = 0;
         s_progressBuyer = address(0);
         s_confirmedBuyers[msg.sender] = true;
+        console.log(
+            "verify is called: address:%s, call:%s",
+            address(this),
+            msg.sender
+        );
         emit Verify(i_owner, msg.sender, true);
+        return true;
     }
 
     /**
@@ -109,6 +132,11 @@ contract Merchandise {
 
         (bool success, ) = i_owner.call{value: address(this).balance}("");
         if (!success) revert Merchandise__WithdrawFailed();
+        console.log(
+            "withdraw is called: address:%s, call:%s",
+            address(this),
+            msg.sender
+        );
     }
 
     function getRetryLimit() public pure returns (uint) {
