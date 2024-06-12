@@ -142,7 +142,7 @@ const verifyfailFixture = async () => {
             })
           )
             .to.emit(Merchandise, "Purchase")
-            .withArgs(iotOwner, buyer, await Merchandise.getAddress());
+            .withArgs(iotOwner, buyer);
           const buyerAddress = await Merchandise.getProgressBuyer();
           const state = await Merchandise.getState();
           assert.equal(buyerAddress, buyer.address);

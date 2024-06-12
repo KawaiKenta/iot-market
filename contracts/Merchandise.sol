@@ -39,12 +39,12 @@ contract Merchandise {
     mapping(address => bool) public s_confirmedBuyers;
 
     // events
-    event Purchase(
+    event Purchase(address indexed owner, address indexed buyer);
+    event Verify(
         address indexed owner,
         address indexed buyer,
-        address indexed merchandise
+        bool indexed result
     );
-    event Verify(address indexed owner, address indexed buyer, bool result);
 
     // constructor
     constructor(uint price, bytes32 dataHash) {
@@ -75,7 +75,7 @@ contract Merchandise {
 
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
         s_progressBuyer = msg.sender;
-        emit Purchase(i_owner, msg.sender, address(this));
+        emit Purchase(i_owner, msg.sender);
         console.log(
             "purchase is called: address:%s, call:%s",
             address(this),
@@ -112,12 +112,12 @@ contract Merchandise {
         s_trialCount = 0;
         s_progressBuyer = address(0);
         s_confirmedBuyers[msg.sender] = true;
+        emit Verify(i_owner, msg.sender, true);
         console.log(
             "verify is called: address:%s, call:%s",
             address(this),
             msg.sender
         );
-        emit Verify(i_owner, msg.sender, true);
         return true;
     }
 
