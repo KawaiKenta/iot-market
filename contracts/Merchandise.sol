@@ -45,6 +45,11 @@ contract Merchandise {
         address indexed buyer,
         bool indexed result
     );
+    event Upload(
+        address indexed owner,
+        address indexed buyer,
+        string indexed uri
+    );
 
     // constructor
     constructor(uint price, bytes32 dataHash) {
@@ -137,6 +142,18 @@ contract Merchandise {
             address(this),
             msg.sender
         );
+    }
+
+    /*
+     * @notice データのアップロードを通知する関数
+     * @dev 商品が進行中かつ、販売者のみが呼び出すことができる
+     * @param encryptURI 購入者のpublic keyで暗号化されたデータのURI
+     */
+    function emitUpload(string memory encryptURI) public {
+        if (msg.sender != i_owner) revert Merchandise__NotOwner();
+        if (s_merchandiseState != MerchandiseState.IN_PROGRESS)
+            revert Merchandise__NotInProgress();
+        emit Upload(i_owner, s_progressBuyer, encryptURI);
     }
 
     function getRetryLimit() public pure returns (uint) {

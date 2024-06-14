@@ -163,6 +163,15 @@ const verifyfailFixture = async () => {
           );
         });
 
+        it("Owner can emit event Upload", async () => {
+          const { iotOwner, buyer, Merchandise } = await loadFixture(
+            purchaseFixture
+          );
+          await expect(Merchandise.connect(iotOwner).emitUpload("test"))
+            .to.emit(Merchandise, "Upload")
+            .withArgs(iotOwner, buyer, "test");
+        });
+
         it("Failed if someone without buyer try to confirm", async () => {
           const { iotOwner, Merchandise } = await loadFixture(purchaseFixture);
           await expect(
