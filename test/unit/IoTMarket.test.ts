@@ -6,16 +6,20 @@ import { developmentChains } from "../../helper-hardhat-config";
 
 const deployFixture = async () => {
   const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
+
+  const pubKeyFactory = await ethers.getContractFactory("PubKey", marketOwner);
+  const pubKey = await pubKeyFactory.deploy();
+
   const IotMarketFactory = await ethers.getContractFactory(
     "IoTMarket",
     marketOwner
   );
-  const IoTMarket = await IotMarketFactory.deploy();
-  return { marketOwner, iotOwner, buyer, IoTMarket };
+  const IoTMarket = await IotMarketFactory.deploy(pubKey);
+  return { marketOwner, iotOwner, buyer, pubKey, IoTMarket };
 };
 
 const merchandisesFixture = async () => {
-  const { marketOwner, iotOwner, buyer, IoTMarket } = await loadFixture(
+  const { marketOwner, iotOwner, buyer, pubKey, IoTMarket } = await loadFixture(
     deployFixture
   );
   for (let i = 0; i < 5; i++) {
@@ -30,7 +34,7 @@ const merchandisesFixture = async () => {
     const merchandise = await ethers.getContractAt("Merchandise", address);
     merchandises.push(merchandise);
   }
-  return { marketOwner, iotOwner, buyer, IoTMarket, merchandises };
+  return { marketOwner, iotOwner, buyer, IoTMarket, pubKey, merchandises };
 };
 
 !developmentChains.includes(network.name)
@@ -41,6 +45,11 @@ const merchandisesFixture = async () => {
           const { IoTMarket } = await loadFixture(deployFixture);
           const response = await IoTMarket.getMerchandises();
           assert.isEmpty(response);
+        });
+        it("PubKey is deployed", async () => {
+          const { pubKey, IoTMarket } = await loadFixture(deployFixture);
+          const pubKeyAddress = await IoTMarket.getPubKeyAddress();
+          assert.equal(await pubKey.getAddress(), pubKeyAddress);
         });
       });
       describe("Deploy Merchandiseis", () => {

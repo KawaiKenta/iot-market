@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 // imports
@@ -19,6 +19,7 @@ error Merchandise__WithdrawFailed();
  * @notice IoT機器データの管理を行うコントラクト
  */
 import "hardhat/console.sol";
+import "./PubKey.sol";
 
 contract Merchandise {
     // type declarations
@@ -32,30 +33,33 @@ contract Merchandise {
     uint public constant RETRY_LIMIT = 10;
     address private immutable i_owner;
     bytes32 private immutable i_dataHash;
-    uint public i_price;
+    uint private i_price;
     MerchandiseState public s_merchandiseState = MerchandiseState.SALE;
-    uint public s_trialCount = 0;
-    address public s_progressBuyer;
+    uint private s_trialCount = 0;
+    address private s_progressBuyer;
+    PubKey private immutable i_pubKey;
+
     mapping(address => bool) public s_confirmedBuyers;
 
     // events
-    event Purchase(address indexed owner, address indexed buyer);
+    event Purchase(
+        address indexed owner,
+        address indexed buyer,
+        string indexed pubkey
+    );
     event Verify(
         address indexed owner,
         address indexed buyer,
         bool indexed result
     );
-    event Upload(
-        address indexed owner,
-        address indexed buyer,
-        string indexed uri
-    );
+    event Upload(address indexed owner, address indexed buyer, string uri);
 
     // constructor
-    constructor(uint price, bytes32 dataHash) {
+    constructor(uint price, bytes32 dataHash, PubKey pubKey) {
         i_owner = tx.origin;
         i_price = price;
         i_dataHash = dataHash;
+        i_pubKey = pubKey;
         console.log(
             "constructor is called: address:%s, call:%s",
             address(this),
@@ -80,7 +84,9 @@ contract Merchandise {
 
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
         s_progressBuyer = msg.sender;
-        emit Purchase(i_owner, msg.sender);
+
+        string memory pubKey = i_pubKey.getPubKey();
+        emit Purchase(i_owner, msg.sender, pubKey);
         console.log(
             "purchase is called: address:%s, call:%s",
             address(this),
@@ -186,5 +192,9 @@ contract Merchandise {
 
     function isConfirmedBuyer(address buyer) public view returns (bool) {
         return s_confirmedBuyers[buyer];
+    }
+
+    function getPubKeyAddress() public view returns (address) {
+        return address(i_pubKey);
     }
 }

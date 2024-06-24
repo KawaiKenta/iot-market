@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "./Merchandise.sol";
+import "./PubKey.sol";
 
 /**
  * @title IoTMarket
@@ -11,8 +12,11 @@ import "./Merchandise.sol";
  */
 contract IoTMarket {
     Merchandise[] public s_merchandises;
+    PubKey public immutable i_pubKey;
 
-    constructor() {}
+    constructor(PubKey pubKey) {
+        i_pubKey = pubKey;
+    }
 
     // functions
     /**
@@ -20,7 +24,7 @@ contract IoTMarket {
      * @dev 実際の商品のデプロイはMerchandiseコントラクトで行う
      */
     function deployMerchandise(uint256 price, bytes32 dataHash) public {
-        Merchandise merchandise = new Merchandise(price, dataHash);
+        Merchandise merchandise = new Merchandise(price, dataHash, i_pubKey);
         s_merchandises.push(merchandise);
     }
 
@@ -30,5 +34,9 @@ contract IoTMarket {
 
     function getMerchandise(uint256 index) public view returns (Merchandise) {
         return s_merchandises[index];
+    }
+
+    function getPubKeyAddress() public view returns (address) {
+        return address(i_pubKey);
     }
 }
