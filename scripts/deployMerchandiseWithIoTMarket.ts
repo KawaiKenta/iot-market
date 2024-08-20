@@ -3,7 +3,15 @@ import "dotenv/config";
 
 const main = async () => {
   const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
-  const iotMarket = await ethers.deployContract("IoTMarket");
+  const pubKey = await ethers.deployContract("PubKey");
+  await pubKey.waitForDeployment();
+  console.log(`Contract "PubKey" with ${await pubKey.getAddress()} deployed`);
+
+  const iotMarket = await ethers.deployContract(
+    "IoTMarket",
+    [await pubKey.getAddress()],
+    marketOwner
+  );
   await iotMarket.waitForDeployment();
   console.log(
     `Contract "IoTMarket" with ${await iotMarket.getAddress()} deployed`
@@ -35,12 +43,6 @@ const main = async () => {
       `Merchandise Address: ${await merchandise.getAddress()}, signer : ${await merchandise.getOwner()}`
     );
   }
-
-  // purchase
-  await merchandises[0].connect(buyer).purchase({
-    value: ethers.parseEther("0.01"),
-  });
-  console.log(`Merchandise purchased`);
 };
 
 main()

@@ -42,11 +42,7 @@ contract Merchandise {
     mapping(address => bool) public s_confirmedBuyers;
 
     // events
-    event Purchase(
-        address indexed owner,
-        address indexed buyer,
-        string indexed pubkey
-    );
+    event Purchase(address indexed owner, address indexed buyer, string pubkey);
     event Verify(
         address indexed owner,
         address indexed buyer,
@@ -85,7 +81,7 @@ contract Merchandise {
         s_merchandiseState = MerchandiseState.IN_PROGRESS;
         s_progressBuyer = msg.sender;
 
-        string memory pubKey = i_pubKey.getPubKey();
+        string memory pubKey = i_pubKey.getPubKey(tx.origin);
         emit Purchase(i_owner, msg.sender, pubKey);
         console.log(
             "purchase is called: address:%s, call:%s",

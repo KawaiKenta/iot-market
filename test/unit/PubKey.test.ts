@@ -19,9 +19,8 @@ const deployFixture = async () => {
         it("There is no Pubkeys", () => async () => {
           const { buyer, pubKey } = await loadFixture(deployFixture);
           await expect(
-            pubKey.connect(buyer).getPubKey()
+            pubKey.connect(buyer).getPubKey(buyer)
           ).to.be.revertedWithCustomError(pubKey, "PubKey__NotRegistered");
-          pubKey.getPubKey({ from: buyer });
         });
       });
       describe("Register PubKey", () => {
@@ -29,7 +28,7 @@ const deployFixture = async () => {
           const { buyer, pubKey } = await loadFixture(deployFixture);
           await pubKey.connect(buyer).registerKey(PUB_KEY);
 
-          const key = await pubKey.connect(buyer).getPubKey();
+          const key = await pubKey.connect(buyer).getPubKey(buyer);
           assert.equal(PUB_KEY, key);
         });
 

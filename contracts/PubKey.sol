@@ -51,8 +51,8 @@ contract PubKey {
         return b.length != 0;
     }
 
-    function getPubKey() public view returns (string memory) {
+    function getPubKey(address who) public view returns (string memory) {
         if (!existKey()) revert PubKey__NotRegistered();
-        return s_addressToPublicKey[tx.origin];
+        return s_addressToPublicKey[address(who)];
     }
 }
