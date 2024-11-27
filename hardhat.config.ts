@@ -35,9 +35,11 @@ const config: HardhatUserConfig = {
     enabled: true,
   },
   gasReporter: {
-    enabled: process.env.REPORT_GAS ? true : false,
+    enabled: true,
     noColors: true,
     outputFile: `logs/${getCurrentTime()}`,
+    coinmarketcap: "ec9d8d7e-6a0b-44e4-9194-83015afe73fd",
+    gasPrice: 3.218,
   },
 };
 
