@@ -1,4 +1,4 @@
-import { ethers, run, network } from "hardhat";
+import { ethers } from "hardhat";
 import "dotenv/config";
 
 const main = async () => {

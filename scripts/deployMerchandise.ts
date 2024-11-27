@@ -1,11 +1,15 @@
-import { ethers, run, network } from "hardhat";
+import { ethers } from "hardhat";
 import "dotenv/config";
 
 const main = async () => {
   const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
+  const pubKey = await ethers.deployContract("PubKey");
+  await pubKey.waitForDeployment();
+  console.log(`Contract "PubKey" with ${await pubKey.getAddress()} deployed`);
+
   let merchandise = await ethers.deployContract(
     "Merchandise",
-    [ethers.parseEther("0.01"), ethers.encodeBytes32String("test")],
+    [ethers.parseEther("0.01"), ethers.encodeBytes32String("test"), pubKey],
     iotOwner
   );
   await merchandise.waitForDeployment();

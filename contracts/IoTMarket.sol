@@ -12,19 +12,13 @@ import "./PubKey.sol";
  */
 contract IoTMarket {
     Merchandise[] public s_merchandises;
-    PubKey public immutable i_pubKey;
-
-    constructor(PubKey pubKey) {
-        i_pubKey = pubKey;
-    }
 
     // functions
     /**
-     * @notice 商品のデプロイ
-     * @dev 実際の商品のデプロイはMerchandiseコントラクトで行う
+     * @notice 商品の登録
+     * @dev Merchandiseコントラクトを紐づけて登録する
      */
-    function deployMerchandise(uint256 price, bytes32 dataHash) public {
-        Merchandise merchandise = new Merchandise(price, dataHash, i_pubKey);
+    function registerMerchandise(Merchandise merchandise) public {
         s_merchandises.push(merchandise);
     }
 
@@ -34,9 +28,5 @@ contract IoTMarket {
 
     function getMerchandise(uint256 index) public view returns (Merchandise) {
         return s_merchandises[index];
-    }
-
-    function getPubKeyAddress() public view returns (address) {
-        return address(i_pubKey);
     }
 }

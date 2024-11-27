@@ -14,7 +14,7 @@ const deployFixture = async () => {
     "IoTMarket",
     marketOwner
   );
-  const IoTMarket = await IotMarketFactory.deploy(pubKey);
+  const IoTMarket = await IotMarketFactory.deploy();
   return { marketOwner, iotOwner, buyer, pubKey, IoTMarket };
 };
 
@@ -22,18 +22,22 @@ const merchandisesFixture = async () => {
   const { marketOwner, iotOwner, buyer, pubKey, IoTMarket } = await loadFixture(
     deployFixture
   );
-  for (let i = 0; i < 5; i++) {
-    await IoTMarket.connect(iotOwner).deployMerchandise(
-      ethers.parseEther("0.01"),
-      ethers.encodeBytes32String("test")
-    );
-  }
+
+  const merchandiseFacotry = await ethers.getContractFactory(
+    "Merchandise",
+    iotOwner
+  );
   const merchandises = [];
-  const merchandiseAddresses = await IoTMarket.getMerchandises();
-  for (const address of merchandiseAddresses) {
-    const merchandise = await ethers.getContractAt("Merchandise", address);
+  for (let i = 0; i < 5; i++) {
+    const merchandise = await merchandiseFacotry.deploy(
+      ethers.parseEther("0.01"),
+      ethers.encodeBytes32String("test"),
+      pubKey
+    );
     merchandises.push(merchandise);
+    await IoTMarket.registerMerchandise(merchandise);
   }
+  console.log(merchandises.length);
   return { marketOwner, iotOwner, buyer, IoTMarket, pubKey, merchandises };
 };
 
@@ -46,17 +50,11 @@ const merchandisesFixture = async () => {
           const response = await IoTMarket.getMerchandises();
           assert.isEmpty(response);
         });
-        it("PubKey is deployed", async () => {
-          const { pubKey, IoTMarket } = await loadFixture(deployFixture);
-          const pubKeyAddress = await IoTMarket.getPubKeyAddress();
-          assert.equal(await pubKey.getAddress(), pubKeyAddress);
-        });
       });
       describe("Deploy Merchandiseis", () => {
         it("There are 5 Merchandises", async () => {
           const { IoTMarket } = await loadFixture(merchandisesFixture);
           const response = await IoTMarket.getMerchandises();
-          assert.isNotEmpty(response);
           assert.lengthOf(response, 5);
         });
         it("Every Merchandise has correct owner", async () => {
