@@ -12,6 +12,7 @@ error Merchandise__NotInProgress();
 error Merchandise__NotEnoughETH();
 error Merchandise__NotBuyer();
 error Merchandise__WithdrawFailed();
+error Merchandise__AccessDenied();
 
 /**
  * @title Merchandise
@@ -39,7 +40,9 @@ contract Merchandise {
     address private s_progressBuyer;
     PubKey private immutable i_pubKey;
 
+    // mapping
     mapping(address => bool) public s_confirmedBuyers;
+    mapping(address => bool) private i_accessDeniedAddresses;
 
     // events
     event Purchase(address indexed owner, address indexed buyer, string pubkey);
@@ -51,11 +54,19 @@ contract Merchandise {
     event Upload(address indexed owner, address indexed buyer, string uri);
 
     // constructor
-    constructor(uint price, bytes32 dataHash, PubKey pubKey) {
+    constructor(
+        uint price,
+        bytes32 dataHash,
+        PubKey pubKey,
+        address[] memory accessDeniedAddresses
+    ) {
         i_owner = tx.origin;
         i_price = price;
         i_dataHash = dataHash;
         i_pubKey = pubKey;
+        for (uint i = 0; i < accessDeniedAddresses.length; i++) {
+            i_accessDeniedAddresses[accessDeniedAddresses[i]] = true;
+        }
         console.log(
             "constructor is called: address:%s, call:%s",
             address(this),
@@ -75,6 +86,8 @@ contract Merchandise {
         if (s_merchandiseState != MerchandiseState.SALE)
             revert Merchandise__NotForSale();
         if (msg.value < i_price) revert Merchandise__NotEnoughETH();
+        if (i_accessDeniedAddresses[msg.sender])
+            revert Merchandise__AccessDenied();
         if (s_confirmedBuyers[msg.sender] == true)
             revert Merchandise__AlreadyPurchased();
 

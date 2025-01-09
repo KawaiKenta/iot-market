@@ -5,7 +5,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { developmentChains } from "../../helper-hardhat-config";
 
 const deployFixture = async () => {
-  const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
+  const [marketOwner, iotOwner, buyer, deniedBuyer] = await ethers.getSigners();
 
   const pubKeyFactory = await ethers.getContractFactory("PubKey", marketOwner);
   const pubKey = await pubKeyFactory.deploy();
@@ -15,13 +15,12 @@ const deployFixture = async () => {
     marketOwner
   );
   const IoTMarket = await IotMarketFactory.deploy();
-  return { marketOwner, iotOwner, buyer, pubKey, IoTMarket };
+  return { marketOwner, iotOwner, buyer, pubKey, IoTMarket, deniedBuyer };
 };
 
 const merchandisesFixture = async () => {
-  const { marketOwner, iotOwner, buyer, pubKey, IoTMarket } = await loadFixture(
-    deployFixture
-  );
+  const { marketOwner, iotOwner, buyer, pubKey, IoTMarket, deniedBuyer } =
+    await loadFixture(deployFixture);
 
   const merchandiseFacotry = await ethers.getContractFactory(
     "Merchandise",
@@ -32,7 +31,8 @@ const merchandisesFixture = async () => {
     const merchandise = await merchandiseFacotry.deploy(
       ethers.parseEther("0.01"),
       ethers.encodeBytes32String("test"),
-      pubKey
+      pubKey,
+      [deniedBuyer]
     );
     merchandises.push(merchandise);
     await IoTMarket.registerMerchandise(merchandise);

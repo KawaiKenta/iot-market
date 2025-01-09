@@ -25,7 +25,7 @@ const deployPubKeyFixture = async () => {
 };
 
 const deployFixture = async () => {
-  const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
+  const [marketOwner, iotOwner, buyer, deniedBuyer] = await ethers.getSigners();
   const { pubKey } = await loadFixture(deployPubKeyFixture);
   const merchandiseFactory = await ethers.getContractFactory(
     "Merchandise",
@@ -34,9 +34,17 @@ const deployFixture = async () => {
   const merchandise = await merchandiseFactory.deploy(
     ethers.parseEther("0.01"),
     ethers.encodeBytes32String("test"),
-    pubKey
+    pubKey,
+    [deniedBuyer]
   );
-  return { marketOwner, iotOwner, buyer, merchandise, pubKey };
+  return {
+    marketOwner,
+    iotOwner,
+    buyer,
+    merchandise,
+    pubKey,
+    deniedBuyer,
+  };
 };
 
 const purchaseFixture = async () => {
@@ -165,6 +173,18 @@ const verifyfailFixture = async () => {
               value: ethers.parseEther("0.01"),
             })
           ).to.be.revertedWithCustomError(pubKey, "PubKey__NotRegistered");
+        });
+
+        it("Fails if denied buyer try to purchase", async () => {
+          const { merchandise, deniedBuyer } = await loadFixture(deployFixture);
+          await expect(
+            merchandise.connect(deniedBuyer).purchase({
+              value: ethers.parseEther("0.01"),
+            })
+          ).to.be.revertedWithCustomError(
+            merchandise,
+            "Merchandise__AccessDenied"
+          );
         });
 
         it("Buyer can purchase merchandise", async () => {
