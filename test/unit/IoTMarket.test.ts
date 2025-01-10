@@ -32,7 +32,9 @@ const merchandisesFixture = async () => {
       ethers.parseEther("0.01"),
       ethers.encodeBytes32String("test"),
       pubKey,
-      [deniedBuyer]
+      [deniedBuyer],
+      ["fileType", "dataSize"],
+      ["mp4", "100MB"]
     );
     merchandises.push(merchandise);
     await IoTMarket.registerMerchandise(merchandise);

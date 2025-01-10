@@ -35,7 +35,9 @@ const deployFixture = async () => {
     ethers.parseEther("0.01"),
     ethers.encodeBytes32String("test"),
     pubKey,
-    [deniedBuyer]
+    [deniedBuyer],
+    ["fileType", "dataSize"],
+    ["mp4", "100MB"]
   );
   return {
     marketOwner,
@@ -150,6 +152,17 @@ const verifyfailFixture = async () => {
             merchandise,
             "Merchandise__NotInProgress"
           );
+        });
+      });
+
+      describe("After deployment", () => {
+        it("You can get Additional Info", async () => {
+          const { merchandise } = await loadFixture(deployFixture);
+          const response = await merchandise.getAllAdditionalInfo();
+          const expected: [string, string] = ["fileType", "mp4"];
+          const expected2: [string, string] = ["dataSize", "100MB"];
+          assert.deepEqual(response[0], expected);
+          assert.deepEqual(response[1], expected2);
         });
       });
 

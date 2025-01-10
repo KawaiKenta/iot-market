@@ -22,6 +22,11 @@ error Merchandise__AccessDenied();
 import "hardhat/console.sol";
 import "./PubKey.sol";
 
+struct KeyValuePair {
+    string key;
+    string value;
+}
+
 contract Merchandise {
     // type declarations
     enum MerchandiseState {
@@ -44,6 +49,8 @@ contract Merchandise {
     mapping(address => bool) public s_confirmedBuyers;
     mapping(address => bool) private i_accessDeniedAddresses;
 
+    KeyValuePair[] private s_additionalInfo;
+
     // events
     event Purchase(address indexed owner, address indexed buyer, string pubkey);
     event Verify(
@@ -58,7 +65,9 @@ contract Merchandise {
         uint price,
         bytes32 dataHash,
         PubKey pubKey,
-        address[] memory accessDeniedAddresses
+        address[] memory accessDeniedAddresses,
+        string[] memory additionalInfoKeys,
+        string[] memory additionalInfoValues
     ) {
         i_owner = tx.origin;
         i_price = price;
@@ -66,6 +75,11 @@ contract Merchandise {
         i_pubKey = pubKey;
         for (uint i = 0; i < accessDeniedAddresses.length; i++) {
             i_accessDeniedAddresses[accessDeniedAddresses[i]] = true;
+        }
+        for (uint i = 0; i < additionalInfoKeys.length; i++) {
+            s_additionalInfo.push(
+                KeyValuePair(additionalInfoKeys[i], additionalInfoValues[i])
+            );
         }
         console.log(
             "constructor is called: address:%s, call:%s",
@@ -169,6 +183,18 @@ contract Merchandise {
         if (s_merchandiseState != MerchandiseState.IN_PROGRESS)
             revert Merchandise__NotInProgress();
         emit Upload(i_owner, s_progressBuyer, encryptURI);
+    }
+
+    /**
+     * @notice 追加情報を取得する関数
+     * @return 追加情報の配列
+     */
+    function getAllAdditionalInfo()
+        public
+        view
+        returns (KeyValuePair[] memory)
+    {
+        return s_additionalInfo;
     }
 
     function getRetryLimit() public pure returns (uint) {
