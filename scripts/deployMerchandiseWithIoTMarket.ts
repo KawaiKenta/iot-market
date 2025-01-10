@@ -1,8 +1,16 @@
 import { ethers } from "hardhat";
 import "dotenv/config";
 
+const metadatas = [
+  { fileType: "mp4", dataSize: "100MB" },
+  { fileType: "jpg", dataSize: "10MB" },
+  { fileType: "txt", dataSize: "1MB" },
+  { fileType: "mp4", dataSize: "16MB" },
+  { fileType: "png", dataSize: "5MB" },
+];
+
 const main = async () => {
-  const [marketOwner, iotOwner, buyer] = await ethers.getSigners();
+  const [marketOwner, iotOwner, buyer, deniedBuyer] = await ethers.getSigners();
   const pubKey = await ethers.deployContract("PubKey");
   await pubKey.waitForDeployment();
   console.log(`Contract "PubKey" with ${await pubKey.getAddress()} deployed`);
@@ -18,6 +26,9 @@ const main = async () => {
       ethers.parseEther("0.01"),
       await createDataHash("test"),
       pubKey,
+      [deniedBuyer],
+      ["fileType", "dataSize"],
+      [metadatas[i].fileType, metadatas[i].dataSize],
     ]);
 
     await merchandise.waitForDeployment();
