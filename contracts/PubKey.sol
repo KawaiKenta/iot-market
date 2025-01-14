@@ -40,7 +40,7 @@ contract PubKey {
      */
     function isPubKey(string memory pubKey) private pure returns (bool) {
         bytes memory b = bytes(pubKey);
-        if (b[0] == "{" && b[2] == "n" && b[b.length - 1] == "}") {
+        if (b[0] == "[" && b[b.length - 1] == "]") {
             return true;
         }
         return false;
