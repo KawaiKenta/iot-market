@@ -4,7 +4,7 @@ import { assert, expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { developmentChains } from "../../helper-hardhat-config";
 
-const PUB_KEY = `{"n":"1ybSJguycYonJ3JJo+u1MwF2h93zf3zuwSNKQbrrY7YMarsdnyHPshx9C26gGthrONqZnnz4kF9V5N4GC3UPIbNGBdeEJX/Hp+McGRUPgS/zTXvVZYo1oxOVzCaARv055BdcweCHaWzO0U+lwtTvR8588ezD/xcvg3tXrnXeDRZ4a0Hmgul/9IF8t92gEiTCFFDZyiWJhOPMSAdYhHjw0k47B337oiGUfr3YcAQmrrlZO78U+44vHkd2CxE4OLfH0yss+GHZYa1slKriQlivj2bBwESmNO6BkqUa52Tes0VFxRr7F4lKLvgx5skN5kzACsga2HaheXjHJqWx5tx9hw==","e":"65537"}`;
+const PUB_KEY = `["n":"1ybSJguycYonJ3JJo+u1MwF2h93zf3zuwSNKQbrrY7YMarsdnyHPshx9C26gGthrONqZnnz4kF9V5N4GC3UPIbNGBdeEJX/Hp+McGRUPgS/zTXvVZYo1oxOVzCaARv055BdcweCHaWzO0U+lwtTvR8588ezD/xcvg3tXrnXeDRZ4a0Hmgul/9IF8t92gEiTCFFDZyiWJhOPMSAdYhHjw0k47B337oiGUfr3YcAQmrrlZO78U+44vHkd2CxE4OLfH0yss+GHZYa1slKriQlivj2bBwESmNO6BkqUa52Tes0VFxRr7F4lKLvgx5skN5kzACsga2HaheXjHJqWx5tx9hw==","e":"65537"]`;
 
 const deployFixture = async () => {
   const [marketOwner, iotOwner, buyer] = await ethers.getSigners();

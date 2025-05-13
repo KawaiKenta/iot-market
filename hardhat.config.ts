@@ -5,11 +5,19 @@ import "dotenv/config";
 const getCurrentTime = () => {
   const date = new Date();
   return date.toLocaleString("sv-SE");
-};
+}
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
-  solidity: "0.8.19",
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
     hardhat: {},
     localhost: {
